@@ -1,6 +1,6 @@
 "use client"
 
-import { api } from "@/convex/_generated/api"
+import { api } from "@/convex"
 import { useAuthActions } from "@convex-dev/auth/react"
 import { useConvex } from "convex/react"
 import { useRouter } from "next/navigation"
