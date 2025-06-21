@@ -4,7 +4,7 @@ import { api } from "@/convex"
 import { DoctorRoleInput, PatientRoleInput } from "@/types"
 import { Preloaded, useMutation, usePreloadedQuery } from "convex/react"
 import { redirect } from "next/navigation"
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent, FormEvent, useState } from "react"
 
 type SetState<T> = (next: T) => void
 
@@ -35,7 +35,8 @@ export function RoleWidget({
 		redirect("/")
 	}
 
-	async function onSubmit() {
+	async function onSubmit(e: FormEvent<HTMLFormElement>) {
+		e.preventDefault()
 		await createRoleForSelf({ payload: input })
 	}
 
