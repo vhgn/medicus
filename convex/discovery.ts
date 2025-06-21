@@ -61,3 +61,20 @@ export const updateDoctor = mutation({
 		})
 	},
 })
+
+export const getPatientInfo = query({
+	args: {
+		patient: v.id("patients"),
+	},
+	async handler(ctx, { patient }) {
+		const info = await ctx.db.get(patient)
+
+		// TODO: Check access
+
+		if (!info) {
+			throw new ConvexError("Not found")
+		}
+
+		return info
+	},
+})

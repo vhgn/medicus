@@ -30,8 +30,10 @@ export default function SignIn() {
 							const role = await convex.query(api.auth.currentRole)
 							if (!role) {
 								router.push("/onboarding")
-							} else {
-								router.push("/")
+							} else if (role.role === "doctor") {
+								router.push(`/doctors/${role.info.user}`)
+							} else if (role.role === "patient") {
+								router.push(`/patients/${role.info.user}`)
 							}
 						})
 				}}

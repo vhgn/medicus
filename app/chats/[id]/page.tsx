@@ -1,8 +1,10 @@
 import { api } from "@/convex"
 import { Id } from "@/datamodel"
-import { fetchQuery, preloadQuery } from "convex/nextjs"
+import { preloadQuery } from "convex/nextjs"
 import { ChatMessages } from "./ChatMessage"
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server"
+import { getSelf } from "../../../helpers/ssr"
+import { redirect } from "next/navigation"
 
 export default async function ChatPage({
 	params,
@@ -26,7 +28,11 @@ export default async function ChatPage({
 		{ token },
 	)
 
-	const self = await fetchQuery(api.auth.currentUserId, {}, { token })
+	const self = await getSelf()
+
+	if (!self) {
+		redirect("/")
+	}
 
 	return (
 		<ChatMessages

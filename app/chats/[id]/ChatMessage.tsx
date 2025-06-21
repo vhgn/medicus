@@ -7,7 +7,7 @@ import { useState } from "react"
 interface ChatMessagesProps {
 	chatQuery: Preloaded<typeof api.chat.getChatInfo>
 	messagesQuery: Preloaded<typeof api.chat.listMessages>
-	self: Id<"users">
+	self: Doc<"users">
 }
 export function ChatMessages({
 	chatQuery,
@@ -27,7 +27,7 @@ export function ChatMessages({
 				_creationTime: Date.now(),
 				chat,
 				content,
-				sender: self,
+				sender: self._id,
 			})
 			localQueryStore.setQuery(api.chat.listMessages, { chat }, query)
 		},
@@ -61,11 +61,17 @@ export function ChatMessages({
 
 interface MessageProps {
 	message: Doc<"messages">
-	self: Id<"users">
+	self: Doc<"users">
 }
 function Message({ self, message }: MessageProps) {
 	return (
-		<div className={message.sender === self ? "bg-blue-300 text-black" : "bg-gray-300 text-white"}>
+		<div
+			className={
+				message.sender === self._id
+					? "bg-blue-300 text-black"
+					: "bg-gray-300 text-white"
+			}
+		>
 			{message.content}
 		</div>
 	)
