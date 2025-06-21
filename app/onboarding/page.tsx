@@ -1,4 +1,4 @@
-import { api } from "@/convex/_generated/api"
+import { api } from "@/convex"
 import { preloadQuery } from "convex/nextjs"
 import { RoleWidget } from "./RoleWidget"
 

@@ -1,7 +1,7 @@
 "use client"
 
-import { api } from "@/convex/_generated/api"
-import { DoctorRoleInput, PatientRoleInput } from "@/convex/types"
+import { api } from "@/convex"
+import { DoctorRoleInput, PatientRoleInput } from "@/types"
 import { Preloaded, useMutation, usePreloadedQuery } from "convex/react"
 import { redirect } from "next/navigation"
 import { ChangeEvent, useState } from "react"

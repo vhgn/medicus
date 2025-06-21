@@ -1,8 +1,11 @@
 import { Password } from "@convex-dev/auth/providers/Password"
 import { convexAuth, getAuthUserId } from "@convex-dev/auth/server"
 import { internalQuery, mutation, query } from "./_generated/server"
-import { ConvexError, v } from "convex/values"
+import { v } from "convex/values"
 import { doctorRoleInput, patientRoleInput } from "./types"
+import { internal } from "./_generated/api"
+import { DataModel } from "./_generated/dataModel"
+import { assertAuthUser, assertAuthUserInfo } from "../helpers/auth"
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [Password],
@@ -10,21 +13,30 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 
 export const currentUser = query({
 	async handler(ctx) {
-		const user = await getAuthUserId(ctx)
-		if (!user) {
-			return null
-		}
-
-		return await ctx.db.get(user)
+		return await assertAuthUserInfo(ctx).catch(() => null)
 	},
 })
 
+type UserRole =
+	| { role: "patient"; info: DataModel["patients"]["document"] }
+	| { role: "doctor"; info: DataModel["doctors"]["document"] }
 export const currentRole = query({
-	async handler(ctx) {
+	async handler(ctx): Promise<null | UserRole> {
 		const user = await getAuthUserId(ctx)
 		if (!user) {
 			return null
 		}
+
+		const role = await ctx.runQuery(internal.auth.userRole, { user })
+		return role
+	},
+})
+
+export const userRole = internalQuery({
+	args: {
+		user: v.id("users"),
+	},
+	async handler(ctx, { user }): Promise<null | UserRole> {
 		const patient = await ctx.db
 			.query("patients")
 			.withIndex("by_user", (q) => q.eq("user", user))
@@ -32,8 +44,8 @@ export const currentRole = query({
 
 		if (patient) {
 			return {
-				type: "patient",
-				patient,
+				role: "patient",
+				info: patient,
 			} as const
 		}
 
@@ -44,8 +56,8 @@ export const currentRole = query({
 
 		if (doctor) {
 			return {
-				type: "doctor",
-				doctor,
+				role: "doctor",
+				info: doctor,
 			} as const
 		}
 
@@ -58,11 +70,7 @@ export const createRoleForSelf = mutation({
 		payload: v.union(doctorRoleInput, patientRoleInput),
 	},
 	async handler(ctx, { payload }) {
-		const user = await getAuthUserId(ctx)
-
-		if (!user) {
-			throw new ConvexError("User is not signed in")
-		}
+		const user = await assertAuthUser(ctx)
 
 		switch (payload.role) {
 			case "doctor":
@@ -76,11 +84,13 @@ export const createRoleForSelf = mutation({
 						tag: tag,
 					})
 				}
+				break
 			case "patient":
 				await ctx.db.insert("patients", {
 					name: payload.name,
 					user,
 				})
+				break
 		}
 	},
 })

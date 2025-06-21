@@ -60,5 +60,22 @@ export default defineSchema({
 		doctor: v.id("doctors"),
 		durationMinutes: v.number(),
 	}),
+	chats: defineTable({
+		name: v.string(),
+	}),
+	chatMembers: defineTable({
+		chat: v.id("chats"),
+		user: v.id("users"),
+		accepted: v.boolean(),
+	})
+		.index("by_user", ["user"])
+		.index("by_chat", ["chat"])
+		.index("by_chat_user", ["chat", "user"])
+		.index("by_user_accepted", ["user", "accepted"]),
+	messages: defineTable({
+		chat: v.id("chats"),
+		content: v.string(),
+		sender: v.id("users"),
+	}),
 	migrations: migrationsTable,
 })
