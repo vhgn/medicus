@@ -1,13 +1,64 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
+import { defineSchema, defineTable } from "convex/server"
+import { v } from "convex/values"
+import { authTables } from "@convex-dev/auth/server"
+import { migrationsTable } from "convex-helpers/server/migrations"
 
 // The schema is normally optional, but Convex Auth
 // requires indexes defined on `authTables`.
 // The schema provides more precise TypeScript types.
 export default defineSchema({
-  ...authTables,
-  numbers: defineTable({
-    value: v.number(),
-  }),
-});
+	...authTables,
+	doctors: defineTable({
+		name: v.string(),
+		user: v.id("users"),
+	})
+		.index("by_user", ["user"])
+		.searchIndex("by_name", {
+			searchField: "name",
+		}),
+	doctorTags: defineTable({
+		doctor: v.id("doctors"),
+		tag: v.string(),
+	}).searchIndex("by_tag", {
+		searchField: "tag",
+	}),
+	patients: defineTable({
+		name: v.string(),
+		user: v.id("users"),
+	})
+		.index("by_user", ["user"])
+		.searchIndex("by_name", {
+			searchField: "name",
+		}),
+	appointments: defineTable({
+		patient: v.id("patients"),
+		doctor: v.id("doctors"),
+		startsAt: v.number(),
+		durationMinutes: v.number(),
+		confirmation: v.id("negotiationConfirmations"),
+	}),
+	negotiationConfirmations: defineTable({
+		base: v.id("negotiationBases"),
+		suggestedDate: v.number(),
+	}),
+	negotiations: defineTable({
+		subject: v.union(
+			v.object({
+				type: v.literal("doctor"),
+				id: v.id("doctors"),
+			}),
+			v.object({
+				type: v.literal("patient"),
+				id: v.id("patients"),
+			}),
+		),
+		suggestedDates: v.array(v.number()),
+		base: v.id("negotiationBases"),
+	}).index("by_base", ["base"]),
+	negotiationBases: defineTable({
+		patient: v.id("patients"),
+		doctor: v.id("doctors"),
+		durationMinutes: v.number(),
+	}),
+	migrations: migrationsTable,
+})
