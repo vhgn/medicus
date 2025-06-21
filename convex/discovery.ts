@@ -1,8 +1,7 @@
-import { v } from "convex/values"
-import { query } from "./_generated/server"
+import { ConvexError, v } from "convex/values"
+import { mutation, query } from "./_generated/server"
 import { paginationOptsValidator } from "convex/server"
-import { getAllOrThrow } from "convex-helpers/server/relationships"
-import { mapPaginated } from "../helpers/utils"
+import { internal } from "./_generated/api"
 
 export const searchDoctorWithName = query({
 	args: {
@@ -23,16 +22,42 @@ export const searchDoctorWithTags = query({
 		paginationOpts: paginationOptsValidator,
 	},
 	async handler(ctx, { query, paginationOpts }) {
-		const result = await ctx.db
-			.query("doctorTags")
-			.withSearchIndex("by_tag", (q) => q.search("tag", query))
+		return await ctx.db
+			.query("doctors")
+			.withSearchIndex("by_tags", (q) => q.search("tags", query))
 			.paginate(paginationOpts)
+	},
+})
 
-		const doctors = await getAllOrThrow(
-			ctx.db,
-			result.page.map((t) => t.doctor),
-		)
+export const getDoctorInfo = query({
+	args: {
+		id: v.id("doctors"),
+	},
+	async handler(ctx, { id }) {
+		const doctor = await ctx.db.get(id)
+		if (!doctor) {
+			throw new ConvexError("Not found")
+		}
 
-		return mapPaginated(result, (t) => doctors.find((d) => d._id === t.doctor)!)
+		return doctor
+	},
+})
+
+export const updateDoctor = mutation({
+	args: {
+		name: v.string(),
+		tags: v.array(v.string()),
+	},
+	async handler(ctx, { name, tags }) {
+		const doctor = await ctx.runQuery(internal.auth.getCurrentDoctor)
+		if (!doctor) {
+			throw new ConvexError("You are not a doctor")
+		}
+
+		await ctx.db.patch(doctor._id, {
+			name,
+			tags: tags.join(" "),
+			rawTags: tags,
+		})
 	},
 })

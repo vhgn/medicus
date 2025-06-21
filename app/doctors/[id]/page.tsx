@@ -1,4 +1,7 @@
-import { Id } from "@/convex/_generated/dataModel"
+import { api } from "@/convex"
+import { Id } from "@/datamodel"
+import { preloadQuery } from "convex/nextjs"
+import { DoctorInfo } from "./DoctorInfo"
 
 export default async function DoctorPage({
 	params,
@@ -6,5 +9,8 @@ export default async function DoctorPage({
 	params: Promise<{ id: Id<"doctors"> }>
 }) {
 	const { id } = await params
-	return <div>{id}</div>
+	const doctorQuery = await preloadQuery(api.discovery.getDoctorInfo, { id })
+	const roleQuery = await preloadQuery(api.auth.currentRole)
+	return <DoctorInfo doctorQuery={doctorQuery} roleQuery={roleQuery}/>
 }
+

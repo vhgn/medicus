@@ -1,7 +1,7 @@
 import { Password } from "@convex-dev/auth/providers/Password"
 import { convexAuth, getAuthUserId } from "@convex-dev/auth/server"
 import { internalQuery, mutation, query } from "./_generated/server"
-import { v } from "convex/values"
+import { ConvexError, v } from "convex/values"
 import { doctorRoleInput, patientRoleInput } from "./types"
 import { internal } from "./_generated/api"
 import { DataModel } from "./_generated/dataModel"
@@ -14,6 +14,17 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 export const currentUser = query({
 	async handler(ctx) {
 		return await assertAuthUserInfo(ctx).catch(() => null)
+	},
+})
+
+export const currentUserId = query({
+	async handler(ctx) {
+		const user = await getAuthUserId(ctx)
+		if (!user) {
+			throw new ConvexError("Not logged in")
+		}
+
+		return user
 	},
 })
 
@@ -74,16 +85,12 @@ export const createRoleForSelf = mutation({
 
 		switch (payload.role) {
 			case "doctor":
-				const doctor = await ctx.db.insert("doctors", {
+				await ctx.db.insert("doctors", {
 					name: payload.name,
 					user,
+					tags: payload.tags.join(" "),
+					rawTags: payload.tags,
 				})
-				for (const tag of payload.tags) {
-					await ctx.db.insert("doctorTags", {
-						doctor,
-						tag: tag,
-					})
-				}
 				break
 			case "patient":
 				await ctx.db.insert("patients", {

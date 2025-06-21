@@ -5,6 +5,7 @@ import { internal } from "./_generated/api"
 import { paginationOptsValidator } from "convex/server"
 import { assertAuthUser } from "../helpers/auth"
 import { mapPaginated } from "../helpers/utils"
+import { getAllOrThrow } from "convex-helpers/server/relationships"
 
 export const startChat = mutation({
 	args: {
@@ -39,6 +40,8 @@ export const startChat = mutation({
 			user: userRole.info.user,
 			accepted: false,
 		})
+
+		return chat
 	},
 })
 
@@ -53,7 +56,12 @@ export const listChats = query({
 			.withIndex("by_user", (q) => q.eq("user", user))
 			.paginate(paginationOpts)
 
-		return mapPaginated(members, (m) => m.chat)
+		const chats = await getAllOrThrow(
+			ctx.db,
+			members.page.map((p) => p.chat),
+		)
+
+		return mapPaginated(members, (m) => chats.find((c) => c._id === m.chat)!)
 	},
 })
 
@@ -112,5 +120,46 @@ export const sendMessage = mutation({
 			content,
 			sender: user,
 		})
+	},
+})
+
+export const listMessages = query({
+	args: {
+		chat: v.id("chats"),
+	},
+	async handler(ctx, { chat }) {
+		const isChatMember = await ctx.runQuery(internal.chat.amIChatMember, {
+			chat,
+		})
+		if (!isChatMember) {
+			throw new ConvexError("Not a member of chat")
+		}
+
+		const messages = await ctx.db
+			.query("messages")
+			.withIndex("by_chat", (q) => q.eq("chat", chat))
+			.collect()
+		return messages
+	},
+})
+
+export const getChatInfo = query({
+	args: {
+		chat: v.id("chats"),
+	},
+	async handler(ctx, { chat }) {
+		const isChatMember = await ctx.runQuery(internal.chat.amIChatMember, {
+			chat,
+		})
+		if (!isChatMember) {
+			throw new ConvexError("Not a member of chat")
+		}
+
+		const info = await ctx.db.get(chat)
+		if (!info) {
+			throw new ConvexError("Chat does not exist")
+		}
+
+		return info
 	},
 })

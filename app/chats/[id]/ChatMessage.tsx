@@ -1,0 +1,72 @@
+"use client"
+import { api } from "@/convex"
+import { Doc, Id } from "@/datamodel"
+import { Preloaded, useMutation, usePreloadedQuery } from "convex/react"
+import { useState } from "react"
+
+interface ChatMessagesProps {
+	chatQuery: Preloaded<typeof api.chat.getChatInfo>
+	messagesQuery: Preloaded<typeof api.chat.listMessages>
+	self: Id<"users">
+}
+export function ChatMessages({
+	chatQuery,
+	messagesQuery,
+	self,
+}: ChatMessagesProps) {
+	const chat = usePreloadedQuery(chatQuery)
+	const messages = usePreloadedQuery(messagesQuery)
+
+	const [message, setMessage] = useState("")
+
+	const sendMessage = useMutation(api.chat.sendMessage).withOptimisticUpdate(
+		(localQueryStore, { chat, content }) => {
+			const query = localQueryStore.getQuery(api.chat.listMessages, { chat })
+			query?.push({
+				_id: crypto.randomUUID() as Id<"messages">,
+				_creationTime: Date.now(),
+				chat,
+				content,
+				sender: self,
+			})
+			localQueryStore.setQuery(api.chat.listMessages, { chat }, query)
+		},
+	)
+
+	return (
+		<div>
+			<p>{chat.name}</p>
+			<div>
+				{messages.map((message) => (
+					<Message key={message._id} message={message} self={self} />
+				))}
+			</div>
+			<form
+				onSubmit={async (e) => {
+					e.preventDefault()
+					setMessage("")
+					await sendMessage({ chat: chat._id, content: message })
+				}}
+			>
+				<input
+					value={message}
+					onChange={(e) => setMessage(e.currentTarget.value)}
+					placeholder="Your message"
+				/>
+				<button>Send</button>
+			</form>
+		</div>
+	)
+}
+
+interface MessageProps {
+	message: Doc<"messages">
+	self: Id<"users">
+}
+function Message({ self, message }: MessageProps) {
+	return (
+		<div className={message.sender === self ? "bg-blue-300 text-black" : "bg-gray-300 text-white"}>
+			{message.content}
+		</div>
+	)
+}

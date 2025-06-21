@@ -21,6 +21,7 @@
     "paths": {
       "@/components/*": ["./components/*"],
 	  "@/convex": ["./convex/_generated/api"],
+	  "@/datamodel": ["./convex/_generated/dataModel"],
 	  "@/types": ["./convex/types"],
 	  "@/hooks/*": ["./hooks/*"]
     }

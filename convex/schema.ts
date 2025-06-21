@@ -11,17 +11,16 @@ export default defineSchema({
 	doctors: defineTable({
 		name: v.string(),
 		user: v.id("users"),
+		tags: v.string(),
+		rawTags: v.array(v.string()),
 	})
 		.index("by_user", ["user"])
 		.searchIndex("by_name", {
 			searchField: "name",
+		})
+		.searchIndex("by_tags", {
+			searchField: "tags",
 		}),
-	doctorTags: defineTable({
-		doctor: v.id("doctors"),
-		tag: v.string(),
-	}).searchIndex("by_tag", {
-		searchField: "tag",
-	}),
 	patients: defineTable({
 		name: v.string(),
 		user: v.id("users"),
@@ -76,6 +75,6 @@ export default defineSchema({
 		chat: v.id("chats"),
 		content: v.string(),
 		sender: v.id("users"),
-	}),
+	}).index("by_chat", ["chat"]),
 	migrations: migrationsTable,
 })
