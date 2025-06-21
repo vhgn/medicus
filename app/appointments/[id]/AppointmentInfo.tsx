@@ -32,7 +32,7 @@ interface WaitingDoctorProps {
 	self: Doc<"users">
 }
 function WaitingDoctor({ info }: WaitingDoctorProps) {
-	return <div>waiting doctor</div>
+	return <div>waiting doctor {info.status}</div>
 }
 
 interface WaitingPatientProps {
@@ -40,7 +40,7 @@ interface WaitingPatientProps {
 	self: Doc<"users">
 }
 function WaitingPatient({ info }: WaitingPatientProps) {
-	return <div>waiting patient</div>
+	return <div>waiting patient {info.status}</div>
 }
 
 interface ConfirmedProps {
@@ -48,5 +48,5 @@ interface ConfirmedProps {
 	self: Doc<"users">
 }
 function Confirmed({ info }: ConfirmedProps) {
-	return <div>confirmed</div>
+	return <div>confirmed {info.status}</div>
 }

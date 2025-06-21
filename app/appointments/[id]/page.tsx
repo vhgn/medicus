@@ -4,6 +4,7 @@ import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server"
 import { preloadQuery } from "convex/nextjs"
 import { AppointmentInfo } from "./AppointmentInfo"
 import { getSelf } from "../../../helpers/ssr"
+import { redirect } from "next/navigation"
 
 export default async function AppointmentPage({
 	params,
@@ -15,6 +16,10 @@ export default async function AppointmentPage({
 	const appointmentQuery = await preloadQuery(api.servicing.appointmentInfo, { base: id }, { token })
 
 	const self = await getSelf()
+
+	if (!self) {
+		redirect("/appointments")
+	}
 
 	return <AppointmentInfo appointmentQuery={appointmentQuery} self={self} />
 }

@@ -274,6 +274,7 @@ export const getAppointmentInfo = internalQuery({
 
 		if (confirmation) {
 			return {
+				_id: base,
 				status: "confirmed",
 				suggestedDate: confirmation.suggestedDate,
 			}
@@ -287,12 +288,14 @@ export const getAppointmentInfo = internalQuery({
 		const latest = suggestions[0]
 		if (latest.subject.type === "doctor") {
 			return {
+				_id: base,
 				status: "waitingPatient",
 				suggestedDates: latest.suggestedDates,
 				suggestions,
 			}
 		} else {
 			return {
+				_id: base,
 				status: "waitingDoctor",
 				suggestedDates: latest.suggestedDates,
 				suggestions,

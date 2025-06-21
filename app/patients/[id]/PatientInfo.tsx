@@ -1,3 +1,5 @@
+"use client"
+
 import { api } from "@/convex"
 import { Doc } from "@/datamodel"
 import { Preloaded, usePreloadedQuery } from "convex/react"

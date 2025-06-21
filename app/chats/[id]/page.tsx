@@ -31,7 +31,7 @@ export default async function ChatPage({
 	const self = await getSelf()
 
 	if (!self) {
-		redirect("/")
+		redirect("/chats")
 	}
 
 	return (
