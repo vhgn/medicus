@@ -36,10 +36,14 @@ export default defineSchema({
 		durationMinutes: v.number(),
 		confirmation: v.id("negotiationConfirmations"),
 	}),
+	appointmentNotes: defineTable({
+		appointment: v.id("appointments"),
+		content: v.string(),
+	}).index("by_appointment", ["appointment"]),
 	negotiationConfirmations: defineTable({
 		base: v.id("negotiationBases"),
 		suggestedDate: v.number(),
-	}),
+	}).index("by_base", ["base"]),
 	negotiations: defineTable({
 		subject: v.union(
 			v.object({
@@ -58,7 +62,9 @@ export default defineSchema({
 		patient: v.id("patients"),
 		doctor: v.id("doctors"),
 		durationMinutes: v.number(),
-	}),
+	})
+		.index("by_patient", ["patient"])
+		.index("by_doctor", ["doctor"]),
 	chats: defineTable({
 		name: v.string(),
 	}),
