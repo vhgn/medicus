@@ -6,10 +6,10 @@ import {
 	query,
 } from "./_generated/server"
 import { api, internal } from "./_generated/api"
-import { paginationOptsValidator } from "convex/server"
-import { Id } from "./_generated/dataModel"
+import { paginationOptsValidator, PaginationResult } from "convex/server"
+import { Doc, Id } from "./_generated/dataModel"
 import { mapPaginated } from "../helpers/utils"
-import { AppointmentConfirmed, AppointmentInfo } from "./types"
+import { AppointmentConfirmed, AppointmentInfo, UserRole } from "./types"
 
 export const createAppointmentWithDoctor = mutation({
 	args: {
@@ -17,7 +17,7 @@ export const createAppointmentWithDoctor = mutation({
 		durationMinutes: v.number(),
 		doctor: v.id("doctors"),
 	},
-	async handler(ctx, { suggestedDates, durationMinutes, doctor }) {
+	async handler(ctx, { suggestedDates, durationMinutes, doctor }): Promise<Id<"negotiationBases">> {
 		const patient = await ctx.runQuery(internal.auth.getCurrentPatient)
 
 		if (!patient) {
@@ -38,6 +38,8 @@ export const createAppointmentWithDoctor = mutation({
 				id: patient._id,
 			},
 		})
+
+		return base
 	},
 })
 
@@ -203,20 +205,29 @@ export const appointmentNotes = query({
 	},
 })
 
-export const listAppointmentsForPatient = query({
+export const listAppointments = query({
 	args: {
 		paginationOpts: paginationOptsValidator,
 	},
 	async handler(ctx, { paginationOpts }) {
-		const patient = await ctx.runQuery(internal.auth.getCurrentPatient)
-		if (!patient) {
-			throw new ConvexError("Not a patient")
+		const role: null | UserRole = await ctx.runQuery(api.auth.currentRole)
+		if (!role) {
+			throw new ConvexError("Does not have a role")
 		}
-		const id: Id<"patients"> = patient._id
-		const pages = await ctx.db
-			.query("negotiationBases")
-			.withIndex("by_patient", (q) => q.eq("patient", id))
-			.paginate(paginationOpts)
+		let pages: PaginationResult<Doc<"negotiationBases">>
+		if (role.role === "patient") {
+			pages = await ctx.db
+				.query("negotiationBases")
+				.withIndex("by_patient", (q) => q.eq("patient", role.info._id))
+				.paginate(paginationOpts)
+
+		} else {
+			pages = await ctx.db
+				.query("negotiationBases")
+				.withIndex("by_doctor", (q) => q.eq("doctor", role.info._id))
+				.paginate(paginationOpts)
+
+		}
 
 		const infos = new Map<Id<"negotiationBases">, AppointmentInfo>()
 		for (const base of pages.page) {

@@ -51,11 +51,13 @@ export function DoctorInfo({
 	const [durationMinutes, setDurationMinutes] = useState("")
 	async function onBookAppointment(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault()
-		await createAppointmentWithDoctor({
+		const appointment = await createAppointmentWithDoctor({
 			suggestedDates,
 			durationMinutes: Number(durationMinutes),
 			doctor: doctor._id,
 		})
+
+		router.push(`/appointments/${appointment}`)
 	}
 
 	return (

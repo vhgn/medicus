@@ -4,7 +4,6 @@ import { internalQuery, mutation, query } from "./_generated/server"
 import { ConvexError, v } from "convex/values"
 import { doctorRoleInput, patientRoleInput, UserRole } from "./types"
 import { internal } from "./_generated/api"
-import { DataModel } from "./_generated/dataModel"
 import { assertAuthUser, assertAuthUserInfo } from "../helpers/auth"
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
