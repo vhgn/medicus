@@ -11,8 +11,9 @@ export const startChat = mutation({
 	args: {
 		name: v.string(),
 		participant: v.id("users"),
+		appointment: v.optional(v.id("appointments"))
 	},
-	async handler(ctx, { name, participant }) {
+	async handler(ctx, { name, participant, appointment }) {
 		const user = await getAuthUserId(ctx)
 		if (!user) {
 			throw new ConvexError("Should be logged in to start chat")
@@ -27,6 +28,7 @@ export const startChat = mutation({
 		}
 		const chat = await ctx.db.insert("chats", {
 			name,
+			appointment,
 		})
 
 		await ctx.db.insert("chatMembers", {

@@ -2,7 +2,7 @@ import { Password } from "@convex-dev/auth/providers/Password"
 import { convexAuth, getAuthUserId } from "@convex-dev/auth/server"
 import { internalQuery, mutation, query } from "./_generated/server"
 import { ConvexError, v } from "convex/values"
-import { doctorRoleInput, patientRoleInput } from "./types"
+import { doctorRoleInput, patientRoleInput, UserRole } from "./types"
 import { internal } from "./_generated/api"
 import { DataModel } from "./_generated/dataModel"
 import { assertAuthUser, assertAuthUserInfo } from "../helpers/auth"
@@ -28,9 +28,6 @@ export const currentUserId = query({
 	},
 })
 
-type UserRole =
-	| { role: "patient"; info: DataModel["patients"]["document"] }
-	| { role: "doctor"; info: DataModel["doctors"]["document"] }
 export const currentRole = query({
 	async handler(ctx): Promise<null | UserRole> {
 		const user = await getAuthUserId(ctx)

@@ -9,7 +9,7 @@ import { api, internal } from "./_generated/api"
 import { paginationOptsValidator } from "convex/server"
 import { Id } from "./_generated/dataModel"
 import { mapPaginated } from "../helpers/utils"
-import { AppointmentInfo } from "./types"
+import { AppointmentConfirmed, AppointmentInfo } from "./types"
 
 export const createAppointmentWithDoctor = mutation({
 	args: {
@@ -159,17 +159,17 @@ export const createAppointmentConfirmation = internalMutation({
 			throw new ConvexError("Negotiation base does not exist")
 		}
 
-		const confirmation = await ctx.db.insert("negotiationConfirmations", {
-			base,
-			suggestedDate,
-		})
-
-		await ctx.db.insert("appointments", {
+		const appointment = await ctx.db.insert("appointments", {
 			doctor: negotiationBase.doctor,
 			patient: negotiationBase.patient,
 			startsAt: suggestedDate,
 			durationMinutes: negotiationBase.durationMinutes,
-			confirmation,
+		})
+
+		await ctx.db.insert("negotiationConfirmations", {
+			base,
+			suggestedDate,
+			appointment,
 		})
 	},
 })
@@ -262,6 +262,7 @@ export const appointmentInfo = query({
 		return await ctx.runQuery(internal.servicing.getAppointmentInfo, { base })
 	},
 })
+
 export const getAppointmentInfo = internalQuery({
 	args: {
 		base: v.id("negotiationBases"),
@@ -273,11 +274,13 @@ export const getAppointmentInfo = internalQuery({
 			.unique()
 
 		if (confirmation) {
-			return {
-				_id: base,
-				status: "confirmed",
-				suggestedDate: confirmation.suggestedDate,
-			}
+			return await ctx.runQuery(
+				internal.servicing.getConfirmedAppointmentInfo,
+				{
+					base,
+					confirmation: confirmation._id,
+				},
+			)
 		}
 
 		const suggestions = await ctx.db
@@ -290,16 +293,48 @@ export const getAppointmentInfo = internalQuery({
 			return {
 				_id: base,
 				status: "waitingPatient",
-				suggestedDates: latest.suggestedDates,
+				last: latest,
 				suggestions,
 			}
 		} else {
 			return {
 				_id: base,
 				status: "waitingDoctor",
-				suggestedDates: latest.suggestedDates,
+				last: latest,
 				suggestions,
 			}
+		}
+	},
+})
+
+export const getConfirmedAppointmentInfo = internalQuery({
+	args: {
+		base: v.id("negotiationBases"),
+		confirmation: v.id("negotiationConfirmations"),
+	},
+	async handler(ctx, { base, confirmation }): Promise<AppointmentConfirmed> {
+		const info = await ctx.db.get(confirmation)
+		if (!info) {
+			throw new ConvexError("Confirmation not found")
+		}
+
+		const appointment = await ctx.db.get(info.appointment)
+		if (!appointment) {
+			throw new ConvexError("Appointment not found")
+		}
+
+		const patient = await ctx.db.get(appointment.patient)
+		const doctor = await ctx.db.get(appointment.doctor)
+
+		if (!patient || !doctor) {
+			throw new ConvexError("Members not found")
+		}
+		return {
+			_id: base,
+			status: "confirmed",
+			suggestedDate: info.suggestedDate,
+			patient,
+			doctor,
 		}
 	},
 })

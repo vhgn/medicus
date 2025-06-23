@@ -3,7 +3,7 @@
 import { api } from "@/convex"
 import { Preloaded, useMutation, usePreloadedQuery } from "convex/react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 
 export function DoctorInfo({
 	doctorQuery,
@@ -17,6 +17,9 @@ export function DoctorInfo({
 
 	const updateDoctor = useMutation(api.discovery.updateDoctor)
 	const startChat = useMutation(api.chat.startChat)
+	const createAppointmentWithDoctor = useMutation(
+		api.servicing.createAppointmentWithDoctor,
+	)
 
 	const [name, setName] = useState(doctor.name)
 
@@ -40,6 +43,19 @@ export function DoctorInfo({
 		})
 
 		router.push(`/chats/${chat}`)
+	}
+
+	const [dialogOpen, setDialogOpen] = useState(false)
+	const [suggestedDates, setSuggestedDates] = useState<number[]>([])
+	const [suggestedDate, setSuggestedDate] = useState("")
+	const [durationMinutes, setDurationMinutes] = useState("")
+	async function onBookAppointment(e: FormEvent<HTMLFormElement>) {
+		e.preventDefault()
+		await createAppointmentWithDoctor({
+			suggestedDates,
+			durationMinutes: Number(durationMinutes),
+			doctor: doctor._id,
+		})
 	}
 
 	return (
@@ -66,7 +82,53 @@ export function DoctorInfo({
 					))}
 				</div>
 			) : (
-				<button onClick={onStartChat}>Start chat</button>
+				<div>
+					<button onClick={onStartChat}>Start chat</button>
+					<button onClick={() => setDialogOpen(true)}>Book appointment</button>
+					<dialog open={dialogOpen}>
+						<form onSubmit={onBookAppointment}>
+							<label>
+								<p>Suggested date</p>
+								<input
+									type="datetime-local"
+									onChange={(e) => setSuggestedDate(e.target?.value ?? "")}
+								/>
+							</label>
+							<button
+							type="button"
+								onClick={() =>
+									setSuggestedDates([
+										...suggestedDates,
+										new Date(suggestedDate).getTime(),
+									])
+								}
+							>
+								Add date
+							</button>
+							{suggestedDates.map((date, index) => (
+								<div key={date}>
+									{new Date(date).toLocaleString()}
+									<button
+									type="button"
+										onClick={() =>
+											setSuggestedDates(suggestedDates.splice(index, 1))
+										}
+									>
+										Remove
+									</button>
+								</div>
+							))}
+							<label>
+								<p>Duration in minutes</p>
+								<input
+									value={durationMinutes}
+									onChange={(e) => setDurationMinutes(e.currentTarget.value)}
+								/>
+							</label>
+							<button>Book</button>
+						</form>
+					</dialog>
+				</div>
 			)}
 		</div>
 	)
