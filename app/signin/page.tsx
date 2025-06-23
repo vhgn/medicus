@@ -28,9 +28,9 @@ export default function SignIn() {
 							if (!role) {
 								router.push("/onboarding")
 							} else if (role.role === "doctor") {
-								router.push(`/doctors/${role.info.user}`)
+								router.push(`/doctors/${role.info._id}`)
 							} else if (role.role === "patient") {
-								router.push(`/patients/${role.info.user}`)
+								router.push(`/patients/${role.info._id}`)
 							}
 						})
 						.catch((error) => {
