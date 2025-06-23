@@ -24,9 +24,6 @@ export default wrap(
 
 function wrap(middleware: NextMiddleware): NextMiddleware {
 	return async function(request, event) {
-		// const origin = request.headers.get("Origin")
-		// const requestUrl = origin ? new URL(origin) : new URL(request.url)
-
 		const requestUrl = new URL(request.url)
 		requestUrl.protocol = "https"
 		const artificial = new NextRequest(requestUrl, {
@@ -43,13 +40,6 @@ function wrap(middleware: NextMiddleware): NextMiddleware {
 			referrerPolicy: request.referrerPolicy,
 			cache: request.cache,
 		})
-		/*
-		  return (
-			originURL !== null &&
-			(originURL.host !== request.headers.get("Host") ||
-			  originURL.protocol !== new URL(request.url).protocol)
-		  );
-		 */
 		return await middleware(artificial, event)
 	}
 }
