@@ -7,7 +7,7 @@ import Link from "next/link"
 const LIMIT = 12
 export default function AppointmentsPage() {
 	const query = usePaginatedQuery(
-		api.servicing.listAppointmentsForPatient,
+		api.servicing.listAppointments,
 		{},
 		{ initialNumItems: LIMIT },
 	)

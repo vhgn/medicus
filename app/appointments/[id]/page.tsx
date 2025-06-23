@@ -14,6 +14,7 @@ export default async function AppointmentPage({
 	const { id } = await params
 	const token = await convexAuthNextjsToken()
 	const appointmentQuery = await preloadQuery(api.servicing.appointmentInfo, { base: id }, { token })
+	const roleQuery = await preloadQuery(api.auth.currentRole, {}, { token })
 
 	const self = await getSelf()
 
@@ -21,5 +22,5 @@ export default async function AppointmentPage({
 		redirect("/appointments")
 	}
 
-	return <AppointmentInfo appointmentQuery={appointmentQuery} self={self} />
+	return <AppointmentInfo appointmentQuery={appointmentQuery} roleQuery={roleQuery} />
 }
