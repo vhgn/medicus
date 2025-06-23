@@ -25,7 +25,7 @@ export default wrap(
 function wrap(middleware: NextMiddleware): NextMiddleware {
 	return async function(request, event) {
 		console.log("URL", request.url);
-		(request as {url: string}).url = request.url.replace("http://", "https://")
+		request.nextUrl.protocol = "https";
 		console.log("URLf", request.url)
 		for (const key of request.headers.keys()) {
 			console.log("H", key, request.headers.get(key))
