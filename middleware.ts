@@ -25,7 +25,9 @@ export default wrap(
 function wrap(middleware: NextMiddleware): NextMiddleware {
 	return async function(request, event) {
 		console.log("URL", request.url)
-		console.log("H", request.headers)
+		for (const key of request.headers.keys()) {
+			console.log("H", "key", request.headers.get(key))
+		}
 		return await middleware(request, event)
 	}
 }
