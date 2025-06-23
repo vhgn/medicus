@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
 			allowedOrigins: ["medicus.aldente.am"],
 		},
 	},
+	webpack: (config, { isServer }) => {
+		if (isServer) {
+			config.devtool = "source-map"
+		}
+		return config
+	},
 }
 
 export default nextConfig
