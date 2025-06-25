@@ -31,15 +31,19 @@ function DoctorNameSearch() {
 		},
 	)
 	return (
-		<div className="border-gray-100 border-s">
+		<div className="card">
+			<h2>Find by name</h2>
 			<input
 				value={query}
 				onChange={(e) => setQuery(e.currentTarget.value)}
 				placeholder="Search by name"
 			/>
-			{doctorsByName?.results.map((doctor) => (
-				<DoctorCard key={doctor._id} doctor={doctor} />
-			))}
+			<div className="card">
+				<h2>Results</h2>
+				{doctorsByName?.results.map((doctor) => (
+					<DoctorCard key={doctor._id} doctor={doctor} />
+				))}
+			</div>
 		</div>
 	)
 }
@@ -57,15 +61,20 @@ function DoctorTagSearch() {
 		},
 	)
 	return (
-		<div className="border-gray-100 border-s">
+		<div className="card">
+			<h2>Find by treatment</h2>
 			<input
 				value={query}
 				onChange={(e) => setQuery(e.currentTarget.value)}
-				placeholder="Search by tag"
+				placeholder="Search by treatment"
 			/>
-			{doctorsByTags?.results.map((doctor) => (
-				<DoctorCard key={doctor._id} doctor={doctor} />
-			))}
+
+			<div className="card">
+				<h2>Results</h2>
+				{doctorsByTags?.results.map((doctor) => (
+					<DoctorCard key={doctor._id} doctor={doctor} />
+				))}
+			</div>
 		</div>
 	)
 }
@@ -76,8 +85,15 @@ interface DoctorCardProps {
 
 function DoctorCard(props: DoctorCardProps) {
 	return (
-		<Link href={`/doctors/${props.doctor._id}`} key={props.doctor._id}>
-			{props.doctor.name}
-		</Link>
+		<div className="card">
+			<Link href={`/doctors/${props.doctor._id}`} key={props.doctor._id}>
+				{props.doctor.name}
+			</Link>
+			<div>
+				{props.doctor.rawTags.map((tag, index) => (
+					<span key={index}>{tag}</span>
+				))}
+			</div>
+		</div>
 	)
 }

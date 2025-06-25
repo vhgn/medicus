@@ -43,7 +43,7 @@ function WaitingDoctor({ info, role }: WaitingDoctorProps) {
 			{info.suggestions.map((suggestion) => (
 				<Suggestion key={suggestion._id} info={suggestion} role={role} />
 			))}
-			<Suggestion info={info.last} role={role} />
+			<Suggestion info={info.last} role={role} isLast />
 		</div>
 	)
 }
@@ -100,7 +100,7 @@ interface SuggestionProps {
 }
 
 function Suggestion({ info, role, isLast }: SuggestionProps) {
-	const isMe = role && info.subject.id === role.info._id
+	const isMe = role !== null && info.subject.id === role.info._id
 
 	const confirmAppointmentDate = useMutation(
 		api.servicing.confirmAppointmentDate,
@@ -126,7 +126,7 @@ function Suggestion({ info, role, isLast }: SuggestionProps) {
 				{info.suggestedDates.map((date, index) => {
 					return (
 						<button
-							disabled={!isLast || !isMe}
+							disabled={!isLast || isMe}
 							key={index}
 							onClick={onClick(date)}
 						>

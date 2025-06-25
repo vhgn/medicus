@@ -17,7 +17,10 @@ export const createAppointmentWithDoctor = mutation({
 		durationMinutes: v.number(),
 		doctor: v.id("doctors"),
 	},
-	async handler(ctx, { suggestedDates, durationMinutes, doctor }): Promise<Id<"negotiationBases">> {
+	async handler(
+		ctx,
+		{ suggestedDates, durationMinutes, doctor },
+	): Promise<Id<"negotiationBases">> {
 		const patient = await ctx.runQuery(internal.auth.getCurrentPatient)
 
 		if (!patient) {
@@ -220,13 +223,11 @@ export const listAppointments = query({
 				.query("negotiationBases")
 				.withIndex("by_patient", (q) => q.eq("patient", role.info._id))
 				.paginate(paginationOpts)
-
 		} else {
 			pages = await ctx.db
 				.query("negotiationBases")
 				.withIndex("by_doctor", (q) => q.eq("doctor", role.info._id))
 				.paginate(paginationOpts)
-
 		}
 
 		const infos = new Map<Id<"negotiationBases">, AppointmentInfo>()
@@ -299,7 +300,11 @@ export const getAppointmentInfo = internalQuery({
 			.withIndex("by_base", (q) => q.eq("base", base))
 			.collect()
 
-		const latest = suggestions[0]
+		const latest = suggestions.pop()
+		if (!latest) {
+			throw new ConvexError("Appointment does not have time suggestions")
+		}
+
 		if (latest.subject.type === "doctor") {
 			return {
 				_id: base,

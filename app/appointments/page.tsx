@@ -15,6 +15,14 @@ export default function AppointmentsPage() {
 	// TODO: show better
 	return (
 		<div>
+			{query.results.length === 0 && (
+				<div>
+					<h2>No appointments</h2>
+					<Link prefetch href="/doctors">
+						Find doctor
+					</Link>
+				</div>
+			)}
 			{query.results.map((result) => (
 				<Link key={result._id} href={`/appointments/${result._id}`}>
 					{result.status}

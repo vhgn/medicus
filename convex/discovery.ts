@@ -62,6 +62,22 @@ export const updateDoctor = mutation({
 	},
 })
 
+export const updatePatient = mutation({
+	args: {
+		name: v.string(),
+	},
+	async handler(ctx, { name }) {
+		const patient = await ctx.runQuery(internal.auth.getCurrentPatient)
+		if (!patient) {
+			throw new ConvexError("You are not a patient")
+		}
+
+		await ctx.db.patch(patient._id, {
+			name,
+		})
+	},
+})
+
 export const getPatientInfo = query({
 	args: {
 		patient: v.id("patients"),
