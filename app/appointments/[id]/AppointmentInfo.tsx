@@ -1,5 +1,6 @@
 "use client"
 
+import { SuggestOtherDates } from "@/components/SuggestOtherDates"
 import { api } from "@/convex"
 import {
 	AppointmentConfirmed,
@@ -60,6 +61,13 @@ function WaitingPatient({ info, role }: WaitingPatientProps) {
 				<Suggestion key={suggestion._id} info={suggestion} role={role} />
 			))}
 			<Suggestion info={info.last} role={role} />
+			<SuggestOtherDates
+			// initialDurationMinutes={info.last}
+				trigger="Suggest"
+				onSubmit={async () => {
+					// TODO
+				}}
+			/>
 		</div>
 	)
 }
