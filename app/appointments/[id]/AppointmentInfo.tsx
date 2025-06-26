@@ -40,7 +40,7 @@ interface WaitingDoctorProps {
 function WaitingDoctor({ info, role }: WaitingDoctorProps) {
 	return (
 		<div>
-			<h2>waiting doctor {info.status}</h2>
+			<h2>Waiting for doctor confirmation</h2>
 			{info.suggestions.map((suggestion) => (
 				<Suggestion key={suggestion._id} info={suggestion} role={role} />
 			))}

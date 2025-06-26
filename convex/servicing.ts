@@ -138,6 +138,7 @@ export const confirmAppointmentDate = mutation({
 				base,
 				suggestedDate,
 			})
+			return
 		}
 
 		const patient = await ctx.runQuery(internal.auth.getCurrentPatient)
@@ -146,6 +147,7 @@ export const confirmAppointmentDate = mutation({
 				base,
 				suggestedDate,
 			})
+			return
 		}
 
 		throw new ConvexError("User does not have access to confirm")

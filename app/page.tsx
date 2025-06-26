@@ -18,6 +18,9 @@ export default function Home() {
 				<Link prefetch href="/doctors">
 					Find doctor
 				</Link>
+				<Link prefetch href="/appointments">
+					Appointments
+				</Link>
 				{url && (
 					<Link prefetch href={url}>
 						My profile

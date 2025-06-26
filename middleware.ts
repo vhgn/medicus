@@ -24,6 +24,9 @@ export default wrap(
 
 function wrap(middleware: NextMiddleware): NextMiddleware {
 	return async function(request, event) {
+		if (process.env.USE_HTTP) {
+			return await middleware(request, event)
+		}
 		const requestUrl = new URL(request.url)
 		requestUrl.protocol = "https"
 		const artificial = new NextRequest(requestUrl, {

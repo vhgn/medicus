@@ -11,6 +11,7 @@ export default function SignIn() {
 	const [flow, setFlow] = useState<"signIn" | "signUp">("signIn")
 	const [error, setError] = useState<string | null>(null)
 	const router = useRouter()
+	const convex = useConvex()
 
 	return (
 		<div className="flex flex-col gap-8 w-96 mx-auto h-screen justify-center items-center">
