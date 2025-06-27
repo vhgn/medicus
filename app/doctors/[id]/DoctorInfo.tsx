@@ -30,15 +30,6 @@ export function DoctorInfo({
 
 	const isMe = role?.info._id === doctor._id
 
-	function removeTag(index: number) {
-		return async function() {
-			await updateDoctor({
-				name: doctor.name,
-				tags: doctor.rawTags.splice(index, 1),
-			})
-		}
-	}
-
 	async function onStartChat() {
 		const chat = await startChat({
 			name: "Initial consultation",
@@ -74,15 +65,21 @@ export function DoctorInfo({
 							Add tag
 						</button>
 						{tags.map((tag, index) => (
-							<li key={tag} onClick={removeTag(index)}>
+							<li key={tag + index}>
 								{tag}
+								<button
+									type="button"
+									onClick={() => {
+										const updated = [...tags]
+										updated.splice(index, 1)
+										setTags(updated)
+									}}
+								>
+									Remove
+								</button>
 							</li>
 						))}
-						<button
-							onClick={() => updateDoctor({ name, tags })}
-						>
-							Save
-						</button>
+						<button onClick={() => updateDoctor({ name, tags })}>Save</button>
 					</div>
 				</div>
 			) : (

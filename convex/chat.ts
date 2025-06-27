@@ -20,7 +20,7 @@ export const startChat = mutation({
 			throw new ConvexError("Should be logged in to start chat")
 		}
 
-		const userRole = await ctx.runQuery(internal.auth.userRole, {
+		const participantRole = await ctx.runQuery(internal.auth.userRole, {
 			user: participant,
 		})
 
@@ -37,7 +37,7 @@ export const startChat = mutation({
 			accepted = true
 		}
 
-		if (!userRole) {
+		if (!participantRole) {
 			throw new ConvexError("Participant does not exist")
 		}
 		const chat = await ctx.db.insert("chats", {
@@ -53,7 +53,7 @@ export const startChat = mutation({
 
 		await ctx.db.insert("chatMembers", {
 			chat,
-			user: userRole.info.user,
+			user: participantRole.info.user,
 			accepted,
 		})
 
@@ -77,6 +77,8 @@ export const listChats = query({
 			members.page.map((p) => p.chat),
 		)
 
+			console.log("Member", members)
+
 		return mapPaginated(members, (m) => {
 			return {
 				...chats.find((c) => c._id === m.chat)!,
@@ -95,7 +97,7 @@ export const amIChatMember = internalQuery({
 		const member = await ctx.db
 			.query("chatMembers")
 			.withIndex("by_chat_user", (q) => q.eq("chat", chat).eq("user", user))
-			.first()
+			.unique()
 
 		return member
 	},

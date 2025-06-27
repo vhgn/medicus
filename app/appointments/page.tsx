@@ -28,7 +28,9 @@ export default function AppointmentsPage() {
 					<AppointmentCard info={result} />
 				</Link>
 			))}
-			<button onClick={() => query.loadMore(LIMIT)}>Load more</button>
+			{query.status === "CanLoadMore" && (
+				<button onClick={() => query.loadMore(LIMIT)}>Load more</button>
+			)}
 		</div>
 	)
 }
