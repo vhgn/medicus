@@ -39,7 +39,7 @@ interface WaitingDoctorProps {
 	role: null | UserRole
 }
 function WaitingDoctor({ info, role }: WaitingDoctorProps) {
-	const shouldSuggest = role?.info._id === info.last.subject.id
+	const shouldSuggest = role?.info._id !== info.last.subject.id
 	const suggest = useMutation(api.servicing.suggestDatesToPatient)
 
 	return (
@@ -52,6 +52,7 @@ function WaitingDoctor({ info, role }: WaitingDoctorProps) {
 			{shouldSuggest && (
 				<SuggestOtherDates
 					trigger="Suggest"
+					initialDurationMinutes={info.durationMinutes}
 					onSubmit={async (suggestedDates) => {
 						await suggest({ base: info._id, suggestedDates })
 					}}
@@ -66,7 +67,7 @@ interface WaitingPatientProps {
 	role: null | UserRole
 }
 function WaitingPatient({ info, role }: WaitingPatientProps) {
-	const shouldSuggest = role?.info._id === info.last.subject.id
+	const shouldSuggest = role?.info._id !== info.last.subject.id
 	const suggest = useMutation(api.servicing.suggestDatesToDoctor)
 	return (
 		<div>
@@ -78,6 +79,7 @@ function WaitingPatient({ info, role }: WaitingPatientProps) {
 			{shouldSuggest && (
 				<SuggestOtherDates
 					trigger="Suggest"
+					initialDurationMinutes={info.durationMinutes}
 					onSubmit={async (suggestedDates) => {
 						await suggest({ base: info._id, suggestedDates })
 					}}

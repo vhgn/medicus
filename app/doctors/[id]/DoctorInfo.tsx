@@ -23,6 +23,8 @@ export function DoctorInfo({
 	)
 
 	const [name, setName] = useState(doctor.name)
+	const [tag, setTag] = useState("")
+	const [tags, setTags] = useState(doctor.rawTags)
 
 	const router = useRouter()
 
@@ -57,17 +59,31 @@ export function DoctorInfo({
 							onChange={(e) => setName(e.currentTarget.value)}
 							placeholder="Name"
 						/>
+						<input
+							value={tag}
+							onChange={(e) => setTag(e.currentTarget.value)}
+							placeholder="New tag"
+						/>
 						<button
-							onClick={() => updateDoctor({ name, tags: doctor.rawTags })}
+							type="button"
+							onClick={() => {
+								setTags([...tags, tag])
+								setTag("")
+							}}
 						>
-							Save name
+							Add tag
+						</button>
+						{tags.map((tag, index) => (
+							<li key={tag} onClick={removeTag(index)}>
+								{tag}
+							</li>
+						))}
+						<button
+							onClick={() => updateDoctor({ name, tags })}
+						>
+							Save
 						</button>
 					</div>
-					{doctor.rawTags.map((tag, index) => (
-						<li key={tag} onClick={removeTag(index)}>
-							{tag}
-						</li>
-					))}
 				</div>
 			) : (
 				<div>

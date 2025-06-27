@@ -20,6 +20,9 @@ export default function ChatsPage() {
 				{chatsQuery.results.map((chat) => (
 					<Link key={chat._id} href={`/chats/${chat._id}`} className="card">
 						{chat.name} {new Date(chat._creationTime).toLocaleString()}
+						{!chat.accepted && (
+							<div className="bg-red-500">Not accepted yet</div>
+						)}
 					</Link>
 				))}
 			</div>

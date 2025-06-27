@@ -24,12 +24,14 @@ export type AppointmentSuggestion = Doc<"negotiations">
 export type AppointmentWaitingDoctor = {
 	_id: Id<"negotiationBases">
 	status: "waitingDoctor"
+	durationMinutes: number
 	suggestions: AppointmentSuggestion[]
 	last: AppointmentSuggestion
 }
 export type AppointmentWaitingPatient = {
 	_id: Id<"negotiationBases">
 	status: "waitingPatient"
+	durationMinutes: number
 	suggestions: AppointmentSuggestion[]
 	last: AppointmentSuggestion
 }

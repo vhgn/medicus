@@ -6,12 +6,13 @@ import { paginationOptsValidator } from "convex/server"
 import { assertAuthUser } from "../helpers/auth"
 import { mapPaginated } from "../helpers/utils"
 import { getAllOrThrow } from "convex-helpers/server/relationships"
+import { Doc } from "./_generated/dataModel"
 
 export const startChat = mutation({
 	args: {
 		name: v.string(),
 		participant: v.id("users"),
-		appointment: v.optional(v.id("negotiationBases"))
+		appointment: v.optional(v.id("negotiationBases")),
 	},
 	async handler(ctx, { name, participant, appointment }) {
 		const user = await getAuthUserId(ctx)
@@ -63,25 +64,12 @@ export const listChats = query({
 			members.page.map((p) => p.chat),
 		)
 
-		return mapPaginated(members, (m) => chats.find((c) => c._id === m.chat)!)
-	},
-})
-
-export const listInvitations = query({
-	args: {
-		paginationOpts: paginationOptsValidator,
-	},
-	async handler(ctx, { paginationOpts }) {
-		const user = await getAuthUserId(ctx)
-		if (!user) {
-			throw new ConvexError("Should be logged in")
-		}
-		return await ctx.db
-			.query("chatMembers")
-			.withIndex("by_user_accepted", (q) =>
-				q.eq("user", user).eq("accepted", true),
-			)
-			.paginate(paginationOpts)
+		return mapPaginated(members, (m) => {
+			return {
+				...chats.find((c) => c._id === m.chat)!,
+				accepted: m.accepted,
+			}
+		})
 	},
 })
 
@@ -96,11 +84,7 @@ export const amIChatMember = internalQuery({
 			.withIndex("by_chat_user", (q) => q.eq("chat", chat).eq("user", user))
 			.first()
 
-		if (!member) {
-			return false
-		} else {
-			return true
-		}
+		return member
 	},
 })
 
@@ -145,14 +129,37 @@ export const listMessages = query({
 	},
 })
 
-export const getChatInfo = query({
+export const acceptInvitation = mutation({
 	args: {
 		chat: v.id("chats"),
 	},
 	async handler(ctx, { chat }) {
-		const isChatMember = await ctx.runQuery(internal.chat.amIChatMember, {
-			chat,
+		const member = await ctx.runQuery(internal.chat.amIChatMember, { chat })
+		if (!member) {
+			throw new ConvexError("You are not a member of chat")
+		}
+
+		if (member.accepted) {
+			throw new ConvexError("Already accepted")
+		}
+
+		await ctx.db.patch(member._id, {
+			accepted: true
 		})
+	}
+})
+
+export const getChatInfo = query({
+	args: {
+		chat: v.id("chats"),
+	},
+	async handler(ctx, { chat }): Promise<Doc<"chats"> & { accepted: boolean }> {
+		const isChatMember = await ctx.runQuery(
+			internal.chat.amIChatMember,
+			{
+				chat,
+			},
+		)
 		if (!isChatMember) {
 			throw new ConvexError("Not a member of chat")
 		}
@@ -162,6 +169,9 @@ export const getChatInfo = query({
 			throw new ConvexError("Chat does not exist")
 		}
 
-		return info
+		return {
+			...info,
+			accepted: isChatMember.accepted,
+		}
 	},
 })

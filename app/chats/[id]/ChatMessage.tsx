@@ -34,11 +34,26 @@ export function ChatMessages({
 		},
 	)
 
+	const acceptInvitation = useMutation(api.chat.acceptInvitation)
+
+	if (!chat.accepted) {
+		return (
+			<div>
+				<h2>You have not yet accepted the invitation</h2>
+				<button onClick={() => acceptInvitation({ chat: chat._id })}>
+					Accept invitation
+				</button>
+			</div>
+		)
+	}
+
 	return (
 		<div>
 			<p>{chat.name}</p>
 			{chat.appointment && (
-				<Link href={`/appointments/${chat.appointment}`}>Go to Appointment</Link>
+				<Link href={`/appointments/${chat.appointment}`}>
+					Go to Appointment
+				</Link>
 			)}
 			<div>
 				{messages.map((message) => (

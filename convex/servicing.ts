@@ -307,10 +307,17 @@ export const getAppointmentInfo = internalQuery({
 			throw new ConvexError("Appointment does not have time suggestions")
 		}
 
+		const baseInfo = await ctx.db.get(base)
+
+		if (!baseInfo) {
+			throw new ConvexError("Appointment base not found")
+		}
+
 		if (latest.subject.type === "doctor") {
 			return {
 				_id: base,
 				status: "waitingPatient",
+				durationMinutes: baseInfo.durationMinutes,
 				last: latest,
 				suggestions,
 			}
@@ -318,6 +325,7 @@ export const getAppointmentInfo = internalQuery({
 			return {
 				_id: base,
 				status: "waitingDoctor",
+				durationMinutes: baseInfo.durationMinutes,
 				last: latest,
 				suggestions,
 			}
