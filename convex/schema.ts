@@ -68,8 +68,8 @@ export default defineSchema({
 		.index("by_doctor", ["doctor"]),
 	chats: defineTable({
 		name: v.string(),
-		appointment: v.optional(v.id("appointments")),
-	}),
+		appointment: v.optional(v.id("negotiationBases")),
+	}).index("by_appointment", ["appointment"]),
 	chatMembers: defineTable({
 		chat: v.id("chats"),
 		user: v.id("users"),

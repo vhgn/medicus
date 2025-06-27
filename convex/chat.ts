@@ -11,7 +11,7 @@ export const startChat = mutation({
 	args: {
 		name: v.string(),
 		participant: v.id("users"),
-		appointment: v.optional(v.id("appointments"))
+		appointment: v.optional(v.id("negotiationBases"))
 	},
 	async handler(ctx, { name, participant, appointment }) {
 		const user = await getAuthUserId(ctx)

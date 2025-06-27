@@ -2,6 +2,7 @@
 import { api } from "@/convex"
 import { Doc, Id } from "@/datamodel"
 import { Preloaded, useMutation, usePreloadedQuery } from "convex/react"
+import Link from "next/link"
 import { useState } from "react"
 
 interface ChatMessagesProps {
@@ -36,6 +37,9 @@ export function ChatMessages({
 	return (
 		<div>
 			<p>{chat.name}</p>
+			{chat.appointment && (
+				<Link href={`/appointments/${chat.appointment}`}>Go to Appointment</Link>
+			)}
 			<div>
 				{messages.map((message) => (
 					<Message key={message._id} message={message} self={self} />

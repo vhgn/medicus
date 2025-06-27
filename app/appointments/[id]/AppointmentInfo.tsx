@@ -10,6 +10,7 @@ import {
 	UserRole,
 } from "@/types"
 import { Preloaded, useMutation, usePreloadedQuery } from "convex/react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 interface ApppointmentInfoProps {
@@ -101,6 +102,7 @@ function Confirmed({ info, role }: ConfirmedProps) {
 		const chat = await startChat({
 			name: "Initial consultation",
 			participant,
+			appointment: info._id,
 		})
 
 		router.push(`/chats/${chat}`)
@@ -110,7 +112,11 @@ function Confirmed({ info, role }: ConfirmedProps) {
 		<div>
 			Appointment date {new Date(info.suggestedDate).toLocaleString()} is
 			confirmed
-			<button onClick={onClick}>Start chat</button>
+			{info.chat ? (
+				<Link href={`/chats/${info.chat}`}>Go to Chat</Link>
+			) : (
+				<button onClick={onClick}>Start chat</button>
+			)}
 		</div>
 	)
 }

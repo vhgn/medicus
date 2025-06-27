@@ -347,12 +347,19 @@ export const getConfirmedAppointmentInfo = internalQuery({
 		if (!patient || !doctor) {
 			throw new ConvexError("Members not found")
 		}
+
+		const chatInfo = await ctx.db
+			.query("chats")
+			.withIndex("by_appointment", (q) => q.eq("appointment", base))
+			.unique()
+
 		return {
 			_id: base,
 			status: "confirmed",
 			suggestedDate: info.suggestedDate,
 			patient,
 			doctor,
+			chat: chatInfo?._id ?? null,
 		}
 	},
 })

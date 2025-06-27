@@ -39,6 +39,7 @@ export type AppointmentConfirmed = {
 	suggestedDate: number
 	patient: Doc<"patients">
 	doctor: Doc<"doctors">
+	chat: null | Id<"chats">
 }
 
 export type UserRole =
