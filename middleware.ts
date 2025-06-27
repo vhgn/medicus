@@ -29,6 +29,7 @@ function wrap(middleware: NextMiddleware): NextMiddleware {
 		}
 		const requestUrl = new URL(request.url)
 		requestUrl.protocol = "https"
+		requestUrl.host = process.env.DOMAIN || "localhost"
 		const artificial = new NextRequest(requestUrl, {
 			method: request.method,
 			keepalive: request.keepalive,
