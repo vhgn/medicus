@@ -15,14 +15,17 @@ export default function ChatsPage() {
 
 	return (
 		<div>
-			<div>
+			<h2>Chats</h2>
+			<div className="flex flex-col">
 				{chatsQuery.results.map((chat) => (
-					<Link key={chat._id} href={`/chats/${chat._id}`}>
-						{chat.name}
+					<Link key={chat._id} href={`/chats/${chat._id}`} className="card">
+						{chat.name} {new Date(chat._creationTime).toLocaleString()}
 					</Link>
 				))}
 			</div>
-			<button onClick={() => chatsQuery.loadMore(LIMIT)}>Load more</button>
+			{chatsQuery.status === "CanLoadMore" && (
+				<button onClick={() => chatsQuery.loadMore(LIMIT)}>Load more</button>
+			)}
 		</div>
 	)
 }
