@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values"
 import { internalQuery, mutation, query } from "./_generated/server"
 import { getAuthUserId } from "@convex-dev/auth/server"
-import { internal } from "./_generated/api"
+import { api, internal } from "./_generated/api"
 import { paginationOptsValidator } from "convex/server"
 import { assertAuthUser } from "../helpers/auth"
 import { mapPaginated } from "../helpers/utils"
@@ -24,6 +24,19 @@ export const startChat = mutation({
 			user: participant,
 		})
 
+		let accepted = false
+		if (appointment) {
+			const info = await ctx.runQuery(api.servicing.canAccessAppointment, {
+				base: appointment,
+			})
+			if (!info) {
+				throw new ConvexError(
+					"Cannot start chat with appointment without access",
+				)
+			}
+			accepted = true
+		}
+
 		if (!userRole) {
 			throw new ConvexError("Participant does not exist")
 		}
@@ -41,7 +54,7 @@ export const startChat = mutation({
 		await ctx.db.insert("chatMembers", {
 			chat,
 			user: userRole.info.user,
-			accepted: false,
+			accepted,
 		})
 
 		return chat
@@ -144,9 +157,9 @@ export const acceptInvitation = mutation({
 		}
 
 		await ctx.db.patch(member._id, {
-			accepted: true
+			accepted: true,
 		})
-	}
+	},
 })
 
 export const getChatInfo = query({
@@ -154,12 +167,9 @@ export const getChatInfo = query({
 		chat: v.id("chats"),
 	},
 	async handler(ctx, { chat }): Promise<Doc<"chats"> & { accepted: boolean }> {
-		const isChatMember = await ctx.runQuery(
-			internal.chat.amIChatMember,
-			{
-				chat,
-			},
-		)
+		const isChatMember = await ctx.runQuery(internal.chat.amIChatMember, {
+			chat,
+		})
 		if (!isChatMember) {
 			throw new ConvexError("Not a member of chat")
 		}

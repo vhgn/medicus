@@ -85,8 +85,6 @@ export const getPatientInfo = query({
 	async handler(ctx, { patient }) {
 		const info = await ctx.db.get(patient)
 
-		// TODO: Check access
-
 		if (!info) {
 			throw new ConvexError("Not found")
 		}

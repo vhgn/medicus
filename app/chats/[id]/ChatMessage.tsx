@@ -87,8 +87,8 @@ function Message({ self, message }: MessageProps) {
 		<div
 			className={
 				message.sender === self._id
-					? "bg-blue-300 text-black"
-					: "bg-gray-300 text-white"
+					? "bg-blue-500 text-black"
+					: "bg-gray-500 text-white"
 			}
 		>
 			{message.content}

@@ -307,10 +307,12 @@ export const getAppointmentInfo = internalQuery({
 			throw new ConvexError("Appointment does not have time suggestions")
 		}
 
-		const baseInfo = await ctx.db.get(base)
+		const baseInfo = await ctx.runQuery(api.servicing.canAccessAppointment, {
+			base,
+		})
 
 		if (!baseInfo) {
-			throw new ConvexError("Appointment base not found")
+			throw new ConvexError("Cannot access appointment")
 		}
 
 		if (latest.subject.type === "doctor") {
@@ -329,6 +331,38 @@ export const getAppointmentInfo = internalQuery({
 				last: latest,
 				suggestions,
 			}
+		}
+	},
+})
+
+export const canAccessAppointment = query({
+	args: {
+		base: v.id("negotiationBases"),
+	},
+	async handler(ctx, { base }) {
+		const baseInfo = await ctx.db.get(base)
+
+		if (!baseInfo) {
+			throw new ConvexError("Appointment base not found")
+		}
+
+		const role = await ctx.runQuery(api.auth.currentRole)
+
+		if (!role) {
+			throw new ConvexError("Do not have a role")
+		}
+
+		switch (role.role) {
+			case "patient":
+				if (baseInfo.patient === role.info._id) {
+					return baseInfo
+				}
+				return null
+			case "doctor":
+				if (baseInfo.doctor === role.info._id) {
+					return baseInfo
+				}
+				return null
 		}
 	},
 })

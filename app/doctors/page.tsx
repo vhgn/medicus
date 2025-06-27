@@ -91,7 +91,7 @@ function DoctorCard(props: DoctorCardProps) {
 			</Link>
 			<div>
 				{props.doctor.rawTags.map((tag, index) => (
-					<span key={index}>{tag}</span>
+					<p key={index}>{tag}</p>
 				))}
 			</div>
 		</div>

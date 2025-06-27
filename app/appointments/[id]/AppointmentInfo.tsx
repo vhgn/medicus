@@ -102,7 +102,7 @@ function Confirmed({ info, role }: ConfirmedProps) {
 		const participant =
 			role?.role === "patient" ? info.doctor.user : info.patient.user
 		const chat = await startChat({
-			name: "Initial consultation",
+			name: "Appointed consultation",
 			participant,
 			appointment: info._id,
 		})

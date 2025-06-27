@@ -61,9 +61,11 @@ export function SuggestOtherDates({
 							{new Date(date).toLocaleString()}
 							<button
 								type="button"
-								onClick={() =>
-									setSuggestedDates(suggestedDates.splice(index, 1))
-								}
+								onClick={() => {
+									const dates = [...suggestedDates]
+									dates.splice(index, 1)
+									setSuggestedDates(dates)
+								}}
 							>
 								Remove
 							</button>
