@@ -72,6 +72,7 @@ export function SuggestOtherDates({
 					<label>
 						<p>Duration in minutes</p>
 						<input
+							disabled={initialDurationMinutes !== undefined}
 							value={durationMinutes}
 							onChange={(e) => setDurationMinutes(e.currentTarget.value)}
 						/>

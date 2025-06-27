@@ -38,13 +38,24 @@ interface WaitingDoctorProps {
 	role: null | UserRole
 }
 function WaitingDoctor({ info, role }: WaitingDoctorProps) {
+	const shouldSuggest = role?.info._id === info.last.subject.id
+	const suggest = useMutation(api.servicing.suggestDatesToPatient)
+
 	return (
 		<div>
 			<h2>Waiting for doctor confirmation</h2>
 			{info.suggestions.map((suggestion) => (
-				<Suggestion key={suggestion._id} info={suggestion} role={role} />
+				<Suggestion key={suggestion._id} info={suggestion} />
 			))}
-			<Suggestion info={info.last} role={role} isLast />
+			<Suggestion info={info.last} shouldSuggest={shouldSuggest} />
+			{shouldSuggest && (
+				<SuggestOtherDates
+					trigger="Suggest"
+					onSubmit={async (suggestedDates) => {
+						await suggest({ base: info._id, suggestedDates })
+					}}
+				/>
+			)}
 		</div>
 	)
 }
@@ -54,20 +65,23 @@ interface WaitingPatientProps {
 	role: null | UserRole
 }
 function WaitingPatient({ info, role }: WaitingPatientProps) {
+	const shouldSuggest = role?.info._id === info.last.subject.id
+	const suggest = useMutation(api.servicing.suggestDatesToDoctor)
 	return (
 		<div>
 			waiting patient {info.status}
 			{info.suggestions.map((suggestion) => (
-				<Suggestion key={suggestion._id} info={suggestion} role={role} />
+				<Suggestion key={suggestion._id} info={suggestion} />
 			))}
-			<Suggestion info={info.last} role={role} />
-			<SuggestOtherDates
-			// initialDurationMinutes={info.last}
-				trigger="Suggest"
-				onSubmit={async () => {
-					// TODO
-				}}
-			/>
+			<Suggestion info={info.last} shouldSuggest={shouldSuggest} />
+			{shouldSuggest && (
+				<SuggestOtherDates
+					trigger="Suggest"
+					onSubmit={async (suggestedDates) => {
+						await suggest({ base: info._id, suggestedDates })
+					}}
+				/>
+			)}
 		</div>
 	)
 }
@@ -103,20 +117,17 @@ function Confirmed({ info, role }: ConfirmedProps) {
 
 interface SuggestionProps {
 	info: AppointmentSuggestion
-	role: null | UserRole
-	isLast?: boolean
+	shouldSuggest?: boolean
 }
 
-function Suggestion({ info, role, isLast }: SuggestionProps) {
-	const isMe = role !== null && info.subject.id === role.info._id
-
+function Suggestion({ info, shouldSuggest }: SuggestionProps) {
 	const confirmAppointmentDate = useMutation(
 		api.servicing.confirmAppointmentDate,
 	)
 
 	function onClick(date: number) {
 		return async function() {
-			if (!isLast) {
+			if (!shouldSuggest) {
 				return
 			}
 
@@ -128,13 +139,12 @@ function Suggestion({ info, role, isLast }: SuggestionProps) {
 	}
 
 	return (
-		<div className={isMe ? "bg-blue-500" : "bg-gray-500"}>
-			{isMe ? "You suggested" : "They suggested"}
+		<div className={shouldSuggest ? "bg-blue-500" : "bg-gray-500"}>
 			<div>
 				{info.suggestedDates.map((date, index) => {
 					return (
 						<button
-							disabled={!isLast || isMe}
+							disabled={!shouldSuggest}
 							key={index}
 							onClick={onClick(date)}
 						>
@@ -143,7 +153,6 @@ function Suggestion({ info, role, isLast }: SuggestionProps) {
 					)
 				})}
 			</div>
-			{isMe && "They did not confirm yet"}
 		</div>
 	)
 }
