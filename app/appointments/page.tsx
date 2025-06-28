@@ -15,7 +15,7 @@ export default function AppointmentsPage() {
 
 	return (
 		<div>
-			{query.results.length === 0 && (
+			{query.results.length === 0 && query.status !== "LoadingFirstPage" && (
 				<div>
 					<h2>No appointments</h2>
 					<Link prefetch href="/doctors">
